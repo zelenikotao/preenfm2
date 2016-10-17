@@ -176,7 +176,6 @@ private:
 
     // gate
     float currentGate;
-
 };
 
 
