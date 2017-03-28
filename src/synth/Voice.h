@@ -53,6 +53,7 @@ public:
     bool isNewNotePending() { return this->newNotePending; }
     unsigned int getIndex() { return this->index; }
     char getNote() { return this->note; }
+    void setNote(char note) { this->note = note; }
     char getNextPendingNote() { return this->nextPendingNote; }
     char getNextGlidingNote() { return this->nextGlidingNote; }
     bool isHoldedByPedal() { return this->holdedByPedal; }

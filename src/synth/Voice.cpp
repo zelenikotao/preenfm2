@@ -68,6 +68,7 @@ void Voice::glideToNote(short newNote) {
 	this->gliding = true;
 	this->glidePhase = 0.0f;
 	this->nextGlidingNote = newNote;
+	this->note = newNote;
 	if (this->holdedByPedal) {
 		glideFirstNoteOff();
 	}
@@ -198,7 +199,6 @@ void Voice::endNoteOrBeginNextOne() {
 void Voice::glideFirstNoteOff() {
 	// while gliding the first note was released
 	this->note = this->nextGlidingNote;
-	this->nextGlidingNote = 0;
 }
 
 
@@ -215,6 +215,7 @@ void Voice::noteOff() {
         }
 		this->released = true;
 		this->gliding = false;
+		this->nextGlidingNote = 0;
 		this->holdedByPedal = false;
 
 		currentTimbre->env1.noteOff(&envState1, &matrix);

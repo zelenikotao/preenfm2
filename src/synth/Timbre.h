@@ -233,6 +233,7 @@ private:
     // lfoUsed
     uint8_t lfoUSed[NUMBER_OF_LFO];
 
+    NoteStack pf_note_stack;
 };
 
 #endif /* TIMBRE_H_ */

@@ -189,6 +189,8 @@ Timbre::Timbre() {
     // Arpeggiator start
     Start();
 
+    // note stack for manual performance
+    pf_note_stack.Init();
 
     // Init FX variables
     v0L = v1L = v0R = v1R = 0.0f;
@@ -264,6 +266,8 @@ void Timbre::preenNoteOn(char note, char velocity) {
 	if (unlikely(iNov == 0)) {
 		return;
 	}
+
+	pf_note_stack.NoteOn(note, velocity);
 
 	unsigned int indexMin = (unsigned int)2147483647;
 	int voiceToUse = -1;
@@ -373,6 +377,7 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 
 void Timbre::preenNoteOff(char note) {
 	int iNov = (int) params.engine1.numberOfVoice;
+	pf_note_stack.NoteOff(note);
 	for (int k = 0; k < iNov; k++) {
 		// voice number k of timbre
 		int n = voiceNumber[k];
@@ -393,17 +398,13 @@ void Timbre::preenNoteOff(char note) {
 				}
 			}
 		} else {
-			// if gliding and releasing first note
-			if (voices[n]->getNote() == note) {
-				voices[n]->glideFirstNoteOff();
+			if (pf_note_stack.size() >= iNov) {
+				NoteEntry nn = pf_note_stack.specific_note(iNov);
+				voices[n]->setNote(note);
+				voices[n]->glideToNote(nn.note);
 				return;
 			}
-			// if gliding and releasing next note
-			if (voices[n]->getNextGlidingNote() == note) {
-				voices[n]->glideToNote(voices[n]->getNote());
-				voices[n]->glideFirstNoteOff();
-				return;
-			}
+			voices[n]->noteOff();
 		}
 	}
 }
