@@ -889,6 +889,54 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
 
         break;
     }
+    case FILTER_COMPRESSOR:
+    {
+        float thr = fxParam1;
+        float ratio = fxParam2;
+        float y_thr = ratio * (thr - 1.) + 1.;
+        float x_ratio = y_thr / (thr + 0.005); // avoid division by zero
+        float *sp = this->sampleBlock;
+        for (int k=0; k < BLOCK_SIZE; k++) {
+            float L_gain = *sp;
+            float R_gain = *(sp+1);
+            float L_local = L_gain;
+            float R_local = R_gain;
+
+            if (L_gain < 0.) L_gain = -L_gain;
+            if (R_gain < 0.) R_gain = -R_gain;
+
+            if (L_gain > thr) {
+                L_gain = ((L_gain - thr) * ratio + y_thr) / L_gain;
+            } else {
+                L_gain = x_ratio;
+            }
+
+            if (R_gain > thr) {
+                R_gain = ((R_gain - thr) * ratio + y_thr) / R_gain;
+            } else {
+                R_gain = x_ratio;
+            }
+
+            *sp = L_local * L_gain * mixerGain;
+            if (unlikely(*sp > ratioTimbres)) {
+                *sp = ratioTimbres;
+            }
+            if (unlikely(*sp < -ratioTimbres)) {
+                *sp = -ratioTimbres;
+            }
+            sp++;
+
+            *sp = R_local * R_gain * mixerGain;// * ratioTimbres;
+            if (unlikely(*sp > ratioTimbres)) {
+                *sp = ratioTimbres;
+            }
+            if (unlikely(*sp < -ratioTimbres)) {
+                *sp = -ratioTimbres;
+            }
+            sp++;
+        }
+        break;
+    }
     case FILTER_OFF:
     {
     	// Filter off has gain...
@@ -1050,6 +1098,11 @@ void Timbre::setNewEffecParam(int encoder) {
     {
         fxParam1PlusMatrix = -1.0;
         break;
+    }
+    case FILTER_COMPRESSOR:
+    {
+        fxParam1 = params.effect.param1;
+        fxParam2 = params.effect.param2;
     }
 	}
 }
